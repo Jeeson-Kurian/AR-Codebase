@@ -1,6 +1,6 @@
 # Install dependencies if not already done
 # pip install mediapipe opencv-python pillow numpy
-#demo
+#demo 
 
 import cv2
 import mediapipe as mp
