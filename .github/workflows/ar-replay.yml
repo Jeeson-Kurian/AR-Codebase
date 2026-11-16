@@ -1,0 +1,34 @@
+name: AR replay
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r requirements-demo.txt
+      - run: python -m pip check
+      - name: Prepare and check the eleven calibration overlays
+        run: |
+          python scripts/create_sample_overlays.py
+          python - <<'PY'
+          from PIL import Image
+          for number in range(1, 12):
+              with Image.open(f"hairstyles/hairstyle{number}.png") as image:
+                  assert image.mode == "RGBA" and image.getchannel("A").getextrema() == (0, 230)
+          PY
+      - name: Run the manual overlay on the recorded clip
+        run: |
+          lscpu | grep -E 'Architecture:|Model name:|^CPU\(s\):'
+          python scripts/replay_manual_overlay.py
