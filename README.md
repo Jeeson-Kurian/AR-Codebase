@@ -14,11 +14,19 @@ This computer vision project fits a hairstyle to a moving face in a webcam feed.
 
 ## Reproduce the webcam demo
 
-The 11-style scripts expect a webcam at device index 0, a display, OpenCV, Pillow, NumPy and a MediaPipe installation that exposes `mp.solutions.face_mesh`. They read eleven transparent PNGs from `hairstyles/hairstyle1.png` through `hairstyles/hairstyle11.png` relative to the working directory. The repository omits those assets and a pinned environment. To try the flow with your own images, supply all eleven at those paths and run the manual overlay from the repository root.
+Use Python 3.11 and run these commands from the repository root. The preparation script creates eleven transparent alignment markers at the paths used by both 11-style webcam scripts. It preserves any hairstyle PNGs you already have. The recorded demo uses the original hairstyle artwork. The supplied generator draws numbered arcs and centre marks so you can check tilt, scale and style selection with a fresh checkout.
 
 ```sh
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements-demo.txt
+python scripts/create_sample_overlays.py
 python AROVERLAY_FinalSP_WithMetrices-RealTime.py
 ```
+
+The interactive demo needs a display and a webcam at device index 0. On Windows, activate the environment with `.venv\\Scripts\\activate`. To replay the manual overlay without a camera or window, run `python scripts/replay_manual_overlay.py` after creating the markers.
+
+The replay feeds the first 120 frames of the existing demonstration video through the manual script and records median and p95 processing time. Timing starts at frame decode and ends when the script emits the frame. It excludes webcam exposure time and screen display. The source video already contains rendered overlays, so this replay measures execution on that clip. Independent reference landmarks are still needed to measure placement error.
 
 ## Read the on-screen measurements
 

@@ -1,0 +1,5 @@
+# Direct dependencies for the webcam and replay scripts under Python 3.11.
+mediapipe==0.10.21
+opencv-contrib-python==4.11.0.86
+numpy==1.26.4
+Pillow==11.3.0
