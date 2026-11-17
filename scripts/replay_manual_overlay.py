@@ -1,4 +1,5 @@
-"""Replay the manual webcam script over the first 120 frames of the recorded demo."""
+"""Replay a webcam script over the first 120 frames of the recorded demo."""
+import argparse
 import json
 import math
 import platform
@@ -18,7 +19,25 @@ FRAME_LIMIT = 120
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--mode", choices=("manual", "automatic"), default="manual")
+    mode = parser.parse_args().mode
+    script = {
+        "manual": "AROVERLAY_FinalSP_WithMetrices-RealTime.py",
+        "automatic": "AROVERLAY_AllMetrices-RealTime.py",
+    }[mode]
     samples = []
+    loaded_in_frame = False
+    overlay_frames = 0
+    open_image = Image.open
+
+    def track_image(path, *args, **kwargs):
+        nonlocal loaded_in_frame
+        image = open_image(path, *args, **kwargs)
+        if isinstance(path, (str, Path)) and Path(path).parent == Path("hairstyles"):
+            loaded_in_frame = True
+        return image
+
     started = 0.0
     capture = cv2.VideoCapture(str(VIDEO))
     if not capture.isOpened():
@@ -37,9 +56,12 @@ def main():
             capture.release()
 
     def collect_frame(_window, frame):
+        nonlocal overlay_frames, loaded_in_frame
         if frame is None or frame.size == 0:
             raise RuntimeError("The overlay script emitted an empty frame")
         samples.append(1000 * (time.perf_counter() - started))
+        overlay_frames += int(loaded_in_frame)
+        loaded_in_frame = False
 
     try:
         with (
@@ -47,17 +69,16 @@ def main():
             patch.object(cv2, "waitKey", return_value=-1),
             patch.object(cv2, "imshow", side_effect=collect_frame),
             patch.object(cv2, "destroyAllWindows"),
-            patch.object(Image, "open", wraps=Image.open) as opened,
+            patch.object(Image, "open", new=track_image),
         ):
-            runpy.run_path(str(ROOT / "AROVERLAY_FinalSP_WithMetrices-RealTime.py"), run_name="__main__")
+            runpy.run_path(str(ROOT / script), run_name="__main__")
     finally:
         capture.release()
 
-    overlay_frames = sum(str(call.args[0]).startswith("hairstyles/") for call in opened.call_args_list)
     if len(samples) != FRAME_LIMIT or not overlay_frames:
         raise RuntimeError(f"Replay emitted {len(samples)} frames and opened {overlay_frames} overlays")
     print(json.dumps({
-        "clip": VIDEO.name, "script": "manual", "python": platform.python_version(),
+        "clip": VIDEO.name, "script": mode, "python": platform.python_version(),
         "frames": len(samples), "frames_loading_overlay": overlay_frames,
         "median_frame_ms": round(statistics.median(samples), 2),
         "p95_frame_ms": round(sorted(samples)[math.ceil(.95 * len(samples)) - 1], 2),

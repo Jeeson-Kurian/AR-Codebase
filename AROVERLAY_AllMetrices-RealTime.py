@@ -60,15 +60,13 @@ while cap.isOpened():
         break
 
     iou_text = "IoU: N/A"
-    confidence_text = "Confidence: N/A"
+    landmark_text = "Landmarks: 0"
 
     if results.multi_face_landmarks:
         face_landmarks = results.multi_face_landmarks[0]
         coords = [(int(lm.x * frame.shape[1]), int(lm.y * frame.shape[0])) for lm in face_landmarks.landmark]
 
-        if len(coords) > 450:
-            confidence_score = round(min(len(coords) / 468, 1.0), 2)
-            confidence_text = f"Confidence: {confidence_score:.2f}"
+        landmark_text = f"Landmarks: {len(coords)}"
 
         center_top = coords[10]
         left_temple = coords[127]
@@ -129,7 +127,7 @@ while cap.isOpened():
     cv2.putText(frame, f"FPS: {fps:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
     cv2.putText(frame, f"Style: {current_style + 1}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
     cv2.putText(frame, iou_text, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 255), 2)
-    cv2.putText(frame, confidence_text, (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 165, 255), 2)
+    cv2.putText(frame, landmark_text, (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 165, 255), 2)
 
     cv2.imshow('🎯 Real-Time AR Hairstyle Overlay with Metrics + Auto-Adjust', frame)
 

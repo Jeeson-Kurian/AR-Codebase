@@ -32,4 +32,4 @@ On 16 November 2026 the Ubuntu 22.04 CI runner (AMD EPYC 9V45, Python 3.11.18) p
 
 ## Read the on-screen measurements
 
-FPS measures the time between successive loop iterations on the machine running the demo. IoU measures geometric overlap between the constructed forehead and hairstyle boxes. The automatic variant's “confidence” value is derived from the number of landmarks returned. Assessing placement accuracy would require labelled frames and a separate evaluation.
+FPS measures the time between successive loop iterations on the machine running the demo. IoU measures geometric overlap between the constructed forehead and hairstyle boxes. The automatic variant displays the number of face landmarks returned on each frame. This count cannot establish placement accuracy. Run `python scripts/replay_manual_overlay.py --mode automatic` to exercise automatic style selection on the same clip.

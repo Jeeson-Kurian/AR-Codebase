@@ -32,3 +32,4 @@ jobs:
         run: |
           lscpu | grep -E 'Architecture:|Model name:|^CPU\(s\):'
           python scripts/replay_manual_overlay.py
+          python scripts/replay_manual_overlay.py --mode automatic
